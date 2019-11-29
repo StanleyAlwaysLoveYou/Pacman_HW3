@@ -150,7 +150,7 @@ class ExactInference(InferenceModule):
 
         "*** YOUR CODE HERE ***"
         print "noissyDistance:",noisyDistance
-        print "emissionModel:",emissionModel
+        # print "emissionModel:",emissionModel
         # print "pacmanPosition:",pacmanPosition
         
         # util.raiseNotDefined()
@@ -173,7 +173,7 @@ class ExactInference(InferenceModule):
 
         allPossible.normalize()
         self.beliefs = allPossible
-        print "self.beliefs:",self.beliefs
+        # print "self.beliefs:",self.beliefs
 
     def elapseTime(self, gameState):
         """
@@ -229,7 +229,25 @@ class ExactInference(InferenceModule):
         positions after a time update from a particular position.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        newPosDist = util.Counter()
+        allPossible = util.Counter()
+        for oldPos in self.beliefs:
+            # print "oldpos:",oldpos
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+            # print "newPosDict:",newPosDist
+            # print "legalPositions:",self.legalPositions
+            for newPos, prob in newPosDist.items():
+                # print "enter~~~"
+                # print "{}: {}".format(newPos,prob)
+                # print "{} += {} * {}".format(allPossible[newPos],prob,self.beliefs[newPos])
+                allPossible[newPos] += prob*self.beliefs[oldPos]
+                # print "allPossible[{}]: {}".format(newPos,allPossible[newPos])
+        allPossible.normalize()
+        self.beliefs = allPossible
+        # print "self.beliefs:",self.beliefs
+
+
 
     def getBeliefDistribution(self):
         return self.beliefs
