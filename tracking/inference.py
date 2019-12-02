@@ -368,7 +368,26 @@ class ParticleFilter(InferenceModule):
         a belief distribution.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        weight = util.Counter()
+        newPosDist = util.Counter()
+        # print "self.getBeliefDistribution():", self.getBeliefDistribution()
+        for oldPos in self.getBeliefDistribution():
+            # print oldPos
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+            # print "newPosDist:", newPosDist
+            for newPos, prob in newPosDist.items():
+                weight[newPos] += prob*self.getBeliefDistribution()[oldPos]
+        # print "weight:", weight
+        if weight.totalCount() == 0.0:
+                # print "weight all zero!!"
+                self.initializeUniformly(gameState)
+        else:
+            self.particle = []
+            for i in range(self.numParticles):
+                self.particle.append(util.sample(weight))
+        # print "particle:", self.particle
+        
+        # util.raiseNotDefined()
 
     def getBeliefDistribution(self):
         """
