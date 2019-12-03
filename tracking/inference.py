@@ -383,8 +383,10 @@ class ParticleFilter(InferenceModule):
                 self.initializeUniformly(gameState)
         else:
             self.particle = []
-            for i in range(self.numParticles):
-                self.particle.append(util.sample(weight))
+            items = sorted(weight.items())
+            self.particle = util.nSample([i[1] for i in items],[i[0] for i in items],self.numParticles)
+            # for i in range(self.numParticles):
+            #     self.particle.append(util.sample(weight))
         # print "particle:", self.particle
         
         # util.raiseNotDefined()
