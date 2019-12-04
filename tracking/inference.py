@@ -635,20 +635,26 @@ class JointParticleFilter:
             # print "newParticle:", newParticle
             weight = util.Counter()
             temp = util.Counter()
-            temp[(0,0)] = 1
             weightforall = util.Counter()
             newPosDist = []
             for i in range(len(oldParticle)):
                 newPosDist.append(getPositionDistributionForGhost(
                     setGhostPositions(gameState, newParticle), i, self.ghostAgents[i]))
                 # print "newPosDist:", newPosDist
-            for pos in self.iterPosition:
-                weight[pos] = 1
-                for i in range(len(pos)):
-                    weight[pos] *= newPosDist[i][pos[i]] 
-            # print "weight:", weight
-            newParticle = util.sampleFromCounter(weight)       
-                
+            "***all case***" 
+            # for pos in self.iterPosition:
+            #     weight[pos] = 1
+            #     for i in range(len(pos)):
+            #         weight[pos] *= newPosDist[i][pos[i]] 
+            # # print "weight:", weight  
+            "***end of all case***"    
+
+            "***special for 2 ghost case***" 
+            for pos1, prob1 in newPosDist[0].items():
+                for pos2, prob2 in newPosDist[1].items():
+                    weight[(pos1,pos2)] = prob1*prob2
+            "***end of special for 2 ghost case***"    
+            newParticle = util.sampleFromCounter(weight)  
             "*** END YOUR CODE HERE ***"
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
