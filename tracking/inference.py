@@ -487,12 +487,12 @@ class JointParticleFilter:
         self.iterPosition = list(itertools.product(self.legalPositions,repeat=self.numGhosts))
         # print "iterPosition:", self.iterPosition
         ratio = self.numParticles/len(self.iterPosition)
-        # print "ratio:", ratio
-        self.particle = []  
+        # print "ratio:", ratio, "= {} / {}".format(self.numParticles,len(self.iterPosition))
+        self.particles = []  
         for p in self.iterPosition:
             for i in range(ratio):
-                self.particle.append(p)
-        # print "particle:",self.particle
+                self.particles.append(p)
+        # print "particle:",self.particles
 
     def addGhostAgent(self, agent):
         """
@@ -547,30 +547,30 @@ class JointParticleFilter:
             if noisyDistances[i] == None:
                 print "ghost {} into jail!!!".format(i)
                 for i in range(self.numParticles):
-                    self.particle[i] = self.getParticleWithGhostInJail(self.particle[i],i)
+                    self.particles[i] = self.getParticleWithGhostInJail(self.particles[i],i)
                     
             
         for p in self.iterPosition:
             # print p
-            temp = 1
+            weight[p] = 1
             for i in range(self.numGhosts):
                 trueDistance = util.manhattanDistance(p[i], pacmanPosition)
                 if emissionModels[i][trueDistance] >= 0:
                     # print self.getBeliefDistribution()[p]
                     # if trueDistance[i]==0:  print emissionModels[j][trueDistance[i]]
-                        temp *= emissionModels[i][trueDistance]
-                weight[p] = temp * self.getBeliefDistribution()[p]
+                        weight[p] *= emissionModels[i][trueDistance]
+            weight[p] *= self.getBeliefDistribution()[p]
         # print "weight:", weight
         # print weight.totalCount()
         if weight.totalCount() == 0.0:
             # print "weight all zero!!"
             self.initializeParticles()
         else:
-            self.particle = []
+            self.particles = []
             items = sorted(weight.items())
-            self.particle = util.nSample([i[1] for i in items],[i[0] for i in items],self.numParticles)
+            self.particles = util.nSample([i[1] for i in items],[i[0] for i in items],self.numParticles)
             # for i in range(self.numParticles):
-            #     self.particle.append(util.sample(weight))
+            #     self.particles.append(util.sample(weight))
         
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
@@ -632,7 +632,23 @@ class JointParticleFilter:
             # now loop through and update each entry in newParticle...
 
             "*** YOUR CODE HERE ***"
-
+            # print "newParticle:", newParticle
+            weight = util.Counter()
+            temp = util.Counter()
+            temp[(0,0)] = 1
+            weightforall = util.Counter()
+            newPosDist = []
+            for i in range(len(oldParticle)):
+                newPosDist.append(getPositionDistributionForGhost(
+                    setGhostPositions(gameState, newParticle), i, self.ghostAgents[i]))
+                # print "newPosDist:", newPosDist
+            for pos in self.iterPosition:
+                weight[pos] = 1
+                for i in range(len(pos)):
+                    weight[pos] *= newPosDist[i][pos[i]] 
+            # print "weight:", weight
+            newParticle = util.sampleFromCounter(weight)       
+                
             "*** END YOUR CODE HERE ***"
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
@@ -640,7 +656,7 @@ class JointParticleFilter:
     def getBeliefDistribution(self):
         "*** YOUR CODE HERE ***"
         beliefs = util.Counter()
-        for p in self.particle:
+        for p in self.particles:
             beliefs[p] += 1.0
         beliefs.normalize()
         # print "beliefs:", beliefs
